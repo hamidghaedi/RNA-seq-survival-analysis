@@ -32,4 +32,3 @@ From here on, we will focus on gene expression data. For steps needed for surviv
 2-	Data wrangling
 
 3-	Performing survival analysis
-
