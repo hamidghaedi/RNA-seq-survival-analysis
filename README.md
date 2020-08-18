@@ -29,7 +29,7 @@ From here on, we will focus on gene expression data. For steps needed for surviv
 
 1-	Downloading intended data
 
-2-	Data wrangling and polishing
+2-	Data wrangling
 
 3-	Performing survival analysis
 
