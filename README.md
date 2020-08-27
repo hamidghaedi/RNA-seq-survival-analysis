@@ -39,7 +39,7 @@ Direct data retrieval, no need to install any packages.
 2-	Clinical data: In the popped window scroll down to the section “Clinical”, find ```Merge_Clinical``` and download it. Extract ```BLCA.merged_only_clinical_clin_format.txt``` into your working directory.
 
 To read data in R:
-```
+```R
 ###reading exptression matrix
 rna <- read.table('BLCA.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes_normalized__data.data.txt', sep = "\t", header = T, row.names = 1)
 # looking at first rows:
