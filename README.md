@@ -1,7 +1,7 @@
 # RNA_seq_survival_analysis_in_R
 Survival analysis on gene expression (RNA-seq) in bladder cancer TCGA data
 
-# When is this needed?
+## When is this needed?
 
 In some cases when you have a list of differentially expressed genes/genes belongs to a specific GO term/somatically mutated genes it would be very powerful to find correlation between status of dysregulation in these genes and survival time of patients. 
 
@@ -10,12 +10,12 @@ a) Do dysregulation of epigenetic-related genes is associated with bladder cance
 b) Do mutations in the epigenetic-related genes is associated with bladder cancer patient survival?
 Before diving into analysis, I am going to share some basic needed to know to better understand the analysis steps. 
 
-# Introduction to Survival Analysis
+## Introduction to Survival Analysis
 
 In fact, survival analysis corresponds to a number of statistical methods employed to find  the time it takes for an event of interest to occur in a group of patients. 
 To be more specific in cancer research survival we may use survival analysis to answer question about “time” from operation(surgery) to patient death, “time” from starting a treatment regime to cancer progression and “time” from response to a drug to disease recurrence. These are somehow classic use of survival analysis. However, here we will use “gene expression” and “mutation data” to assess their impact on patient survival. Indeed, we want to know correlation (if any) of specific gene dysregulation on bladder cancer patient survival “time”. 
 
-# Some  concepts:
+## Some  concepts:
 
 Two basic concepts in doing survival analysis are survival time and event in a study. Here the time from disease diagnosis to the occurrence of the event of interest (death) is referred as survival time. In addition to “death”, there are other events in cancer studies: relapse and progression. One may consider “relapse” to do relapse-free survival analysis. Relapse is defined as the time between response to treatment and recurrence of the disease. 
 
@@ -23,12 +23,42 @@ In the real-world scenarios in a cohort of patients it is fairly common to have 
 In order to describe survival data, we will use survival probability which corresponds to the probability that a patient survives from the beginning of the time (for example diagnosis of cancer) to a particular future time (end of the study). 
 
 
-# Steps toward performing survival analysis
+## Steps toward performing survival analysis
 
 From here on, we will focus on gene expression data. For steps needed for survival analysis using mutation data please refer here. 
 
-1-	Downloading intended data
+### Downloading  data
+We can use two approaches to retrive data
 
-2-	Data wrangling
+#### Approach A:
 
-3-	Performing survival analysis
+Direct data retrieval, no need to install any packages.
+
+1-	RNA data : Go to the FireBrowse ( http://gdac.broadinstitute.org/ ), select your dataset (we were interested on “Bladder urothelial carcinoma”) under “Data” column click "Browse". In the new webpage popup window scroll down to "mRNASeq" and then select "illuminahiseq_rnaseqv2-RSEM_genes_normalized". Download it, and extract the file “BLCA.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes_normalized__data.data.txt” to your working directory. 
+
+2-	Clinical data: In the popped window scroll down to the section “Clinical”, find "Merge_Clinical" and download it. Extract “BLCA.merged_only_clinical_clin_format.txt” into your working directory.
+
+#### Approach B: 
+
+Alternatively, it is possible to download data using third party package ```TCGABiolink```:
+
+1-	RNA data
+```R
+library(TCGAbiolink)
+query <- GDCquery(project = "TCGA-BLCA",
+                           data.category = "Gene expression",
+                           data.type = "Gene expression quantification",
+                           platform = "Illumina HiSeq", 
+                           file.type  = "normalized_results",
+                           experimental.strategy = "RNA-Seq",
+                           legacy = TRUE)
+GDCdownload(query, method = "api")
+dat <- GDCprepare(query = query, save = TRUE, save.filename = "exp.rda")
+rna <- as.data.frame(SummarizedExperiment::assay(dat))
+```
+
+2-	Clinical data: following the step one, 
+```
+clinical <- data.frame(dat@colData)
+```
+
