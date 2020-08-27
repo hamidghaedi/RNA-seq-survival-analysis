@@ -92,7 +92,7 @@ rna <- as.data.frame(SummarizedExperiment::assay(dat))
 ```
 
 2-	Clinical data: following the step one, 
-```
+```R
 clinical <- data.frame(dat@colData)
 ```
 ### Downloading  data
