@@ -34,9 +34,43 @@ We can use two approaches to retrive data
 
 Direct data retrieval, no need to install any packages.
 
-1-	RNA data : Go to the FireBrowse ( http://gdac.broadinstitute.org/ ), select your dataset (we were interested on “Bladder urothelial carcinoma”) under “Data” column click "Browse". In the new webpage popup window scroll down to "mRNASeq" and then select "illuminahiseq_rnaseqv2-RSEM_genes_normalized". Download it, and extract the file “BLCA.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes_normalized__data.data.txt” to your working directory. 
+1-	RNA data : Go to the FireBrowse ( http://gdac.broadinstitute.org/ ), select your dataset (we were interested on “Bladder urothelial carcinoma”) under “Data” column click "Browse". In the new webpage popup window scroll down to "mRNASeq" and then select ```illuminahiseq_rnaseqv2-RSEM_genes_normalized```. Download it, and extract the file ```BLCA.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes_normalized__data.data.txt``` to your working directory. 
 
-2-	Clinical data: In the popped window scroll down to the section “Clinical”, find "Merge_Clinical" and download it. Extract “BLCA.merged_only_clinical_clin_format.txt” into your working directory.
+2-	Clinical data: In the popped window scroll down to the section “Clinical”, find ```Merge_Clinical``` and download it. Extract ```BLCA.merged_only_clinical_clin_format.txt``` into your working directory.
+
+To read data in R:
+```
+###reading exptression matrix
+rna <- read.table('BLCA.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes_normalized__data.data.txt', sep = "\t", header = T, row.names = 1)
+# looking at first rows:
+head(rna) 
+# as you can see, we have to remove the first row of the datset
+# removing unwanted row:
+rna <- rna[-1, ]
+# row names should be gene name but as you can see, it is a combination of gene symbol and gene Entrez id. for example _"A1BG"_ gene is indicated as _"A1BG|1"_ . 
+#We should polish row name to only contain gene symbol.
+df <- data.frame(name = row.names(rna)) # keeping rownames as a temporary data frame
+df <- data.frame(do.call('rbind', strsplit(as.character(df$name),'|',fixed=TRUE))) # this do magic like "text to column" in Excel!
+df$X1[df$X1 == "?"] <- df$X2 # some genes are only presented by Entrez gene number, to keep these gene
+rowName <- df$X1
+# find duplicates in rowName, if any
+table(duplicated(rowName))
+#FALSE  TRUE 
+#20530     1 
+# in order to resilve duplucation issue
+rowName[duplicated(rowName) == TRUE]
+#[1] "SLC35E2"
+grep("SLC35E2", rowName)
+#[1] 16301 16302
+rowName[16302] <- "SLC35E2_2"
+#setting rna row names 
+row.names(rna) <- rowName
+
+###reading clinical data
+clinical <- read.table('BLCA.merged_only_clinical_clin_format.txt',header=T, row.names=1, sep='\t', fill = TRUE) 
+View(clinical)# it is better to transpose the data set
+clinical <- t(clinical)
+```
 
 #### Approach B: 
 
@@ -61,4 +95,4 @@ rna <- as.data.frame(SummarizedExperiment::assay(dat))
 ```
 clinical <- data.frame(dat@colData)
 ```
-
+### Downloading  data
