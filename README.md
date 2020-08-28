@@ -1,4 +1,4 @@
-# RNA_seq_survival_analysis_in_R
+# RNA seq survival analysis in R
 Survival analysis on gene expression (RNA-seq) in bladder cancer TCGA data
 
 ## When is this needed?
