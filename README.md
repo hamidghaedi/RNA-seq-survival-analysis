@@ -32,7 +32,7 @@ We can use two approaches to retrive data
 
 #### Approach A:
 
-Direct data retrieval, no need to install any packages.
+Direct data retrieval, no need to install any packages. I have adapted this approach from a Biostar [post](https://www.biostars.org/p/153013/) by @Tris. Also some code chuncks for data preparation and analysis are adopted from this post. 
 
 1-	RNA data : Go to the FireBrowse ( http://gdac.broadinstitute.org/ ), select your dataset (we were interested on “Bladder urothelial carcinoma”) under “Data” column click "Browse". In the new webpage popup window scroll down to "mRNASeq" and then select ```illuminahiseq_rnaseqv2-RSEM_genes_normalized```. Download it, and extract the file ```BLCA.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes_normalized__data.data.txt``` to your working directory. 
 
@@ -65,7 +65,7 @@ grep("SLC35E2", rowName)
 rowName[16302] <- "SLC35E2_2"
 #setting rna row names 
 row.names(rna) <- rowName
-
+rm(df, rowName) # removing datasets that we do not need anymore
 ###reading clinical data
 clinical <- read.table('BLCA.merged_only_clinical_clin_format.txt',header=T, row.names=1, sep='\t', fill = TRUE) 
 View(clinical)# it is better to transpose the data set
@@ -74,7 +74,7 @@ clinical <- t(clinical)
 
 #### Approach B: 
 
-Alternatively, it is possible to download data using third party package ```TCGABiolink```:
+Alternatively, it is possible to download data using third party package like ```TCGABiolink```:
 
 1-	RNA data
 ```R
@@ -95,4 +95,18 @@ rna <- as.data.frame(SummarizedExperiment::assay(dat))
 ```R
 clinical <- data.frame(dat@colData)
 ```
-### Downloading  data
+I'd rather to use Approach B, since it is returning you most updated clinical data. However, both should work fine. 
+
+### Data cleaning, recoding and transformation
+However almost all genes included in the ```rna``` matrix, it is quite logical to have genes which show no expression (show 0 expression in all samples) or very low expression or uneven expression pattern ( having 0 value in >= 50% of cases). We need to keep these types of genes out from our analysis.
+
+#to find howmany genes show no expression in the rna matrix
+```R
+table(rowSums(rna) == 0)
+#FALSE  TRUE 
+#19677   270
+#sisualizing RNA read counts distribution
+hist(log10(rowSums(rna)), main = "log10-RNA read count dist")
+```
+
+
