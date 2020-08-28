@@ -105,7 +105,7 @@ However almost all genes included in the ```rna``` matrix, it is quite logical t
 table(rowSums(rna) == 0)
 #FALSE  TRUE 
 #19677   270
-#sisualizing RNA read counts distribution
+#visualizing RNA read counts distribution
 hist(log10(rowSums(rna)), main = "log10-RNA read count dist")
 ```
 
