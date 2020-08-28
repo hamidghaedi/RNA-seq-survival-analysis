@@ -109,4 +109,7 @@ table(rowSums(rna) == 0)
 hist(log10(rowSums(rna)), main = "log10-RNA read count dist")
 ```
 
+![alt text](https://github.com/hamid-gen/RNA_seq_survival_analysis_in_R/blob/master/log10-RNA%20read%20count.png "log10-RNA read count")
+
+
 
