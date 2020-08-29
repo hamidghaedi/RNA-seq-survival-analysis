@@ -136,7 +136,7 @@ To identify how many tumor and normal samples we have in our data we can do:
 
 ```R
 table(substr(colnames(rna),14,15))
- #01  11  # so we have 408 tumors and 11 normal samples.
+ #01  11  # so we have 408 tumors and 19 normal samples.
 #408  19 
 ```
 Now using the barcode we can make indexes for tumor and normal samples
@@ -167,3 +167,28 @@ rm(rna)
 hist(rna_vm)
 ```
 ![alt text](https://github.com/hamid-gen/RNA_seq_survival_analysis_in_R/blob/master/rna_vm.png)
+
+#### RNA-seq data scaling and encoding
+
+To use gene expression matrix in survival analysis usually we encode genes as high or low expressed genes. To do so both fold change and z-score are fine.
+However due to retaining heterogeneity in data the latter is preferred. 
+
+```R
+scal <- function(x,y){
+  mean_n <- rowMeans(y)  # mean of normal
+  sd_n <- apply(y,1,sd)  # SD of normal
+  # z score as (value - mean normal)/SD normal
+  res <- matrix(nrow=nrow(x), ncol=ncol(x))
+  colnames(res) <- colnames(x)
+  rownames(res) <- rownames(x)
+  for(i in 1:dim(x)[1]){
+    for(j in 1:dim(x)[2]){
+      res[i,j] <- (x[i,j]-mean_n[i])/sd_n[i]
+    }
+  }
+  return(res)
+}
+z_rna <- scal(rna_vm[,t_index],rna_vm[,n_index])
+
+rm(rna_vm)
+```
