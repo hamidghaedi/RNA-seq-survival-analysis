@@ -100,8 +100,8 @@ I'd rather to use Approach B, since it is returning you most updated clinical da
 ### Data cleaning, recoding and transformation
 However almost all genes included in the ```rna``` matrix, it is quite logical to have genes which show no expression (show 0 expression in all samples) or very low expression or uneven expression pattern ( having 0 value in >= 50% of cases). We need to keep these types of genes out from our analysis.
 
-#to find howmany genes show no expression in the rna matrix
 ```R
+#to find howmany genes show no expression in the rna matrix
 table(rowSums(rna) == 0)
 #FALSE  TRUE 
 #19677   270
@@ -110,6 +110,15 @@ hist(log10(rowSums(rna)), main = "log10-RNA read count dist")
 ```
 
 ![alt text](https://github.com/hamid-gen/RNA_seq_survival_analysis_in_R/blob/master/log10-RNA%20read%20count.png "log10-RNA read count")
+
+```R
+#to remove genes with no-expression in more 50% of samples:
+fif <- dim(rna)[2]/2
+no_exp <- data.frame(count = apply(rna, 1, function(x) length(which(x== 0))))
+no_exp$gene <- row.names(no_exp)
+no_exp <- no_exp[no_exp$count > fif, ]$gene
+rna <- rna[- which(row.names(rna) %in% no_exp), ]
+```
 
 
 
