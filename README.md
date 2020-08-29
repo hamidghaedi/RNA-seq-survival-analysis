@@ -198,3 +198,53 @@ z_rna <- scal(rna_vm[,t_index],rna_vm[,n_index])
 
 rm(rna_vm)
 ```
+Now it is time to define ```survival time``` and ```event``` in ```clinical``` dataset. 
+```survival time``` could be find under columns that contains "days" in the clinical dataset.
+
+```R
+colnames(clinical)[grep("days", colnames(clinical))]
+#[1] "days_to_collection"                           
+#[2] "days_to_last_follow_up"                       
+#[3] "days_to_diagnosis"                            
+#[4] "days_to_birth"                                
+#[5] "days_to_death"                                
+#[6] "paper_Combined.days.to.last.followup.or.death"
+```
+We will consider ```"days_to_death"``` as survival time.Also in cases we have no ```"days_to_death"``` data, ```"days_to_last_follow_up"``` would be considered.
+```R
+clinical$new_death <- ifelse(is.na(clinical$days_to_death), clinical$days_to_last_follow_up, clinical$days_to_death)
+clinical$new_death[clinical$new_death == 0] <- NA
+```
+Data for ```event``` could be found under column ```vital_status``` . We may want to recode this column.
+
+```R
+# to see what we have in th vital_status column
+table(clinical$vital_status)
+
+#       Alive         Dead Not Reported 
+#         235          191            1 
+# exclude patient with not reported vital_status
+clinical[clinical$vital_status == "Not Reported", ]$barcode
+#[1] "TCGA-K4-A4AB-01B-12R-A28M-07"
+
+clinical <- clinical[-which(row.names(clinical) == "TCGA-K4-A4AB-01B-12R-A28M-07"), ]
+#recoding vital_status
+clinical$event <- ifelse(clinical$vital_status == "Alive", 0,1)
+
+
+# remove sample with "not reported" vital status from expression matrix
+grep("TCGA-K4-A4AB", colnames(z_rna))
+#[1] 308
+z_rna <- z_rna[, -308]
+
+#check to see whether all samples in RNA matrix are present in clinical dataset
+all(substr(rownames(clinical),1,12) %in% colnames(z_rna))
+#[1] TRUE
+all(substr(rownames(clinical),1,12) %in% colnames(z_rna))
+#[1] TRUE
+```
+Final steps before doing servival analysis is to encode RNA-seq data to dysregulated and intact. by dysregulated we mean genes with |z-score| > 1.96.
+```R
+dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,1,0)))
+```
+###Performing survival analysis
