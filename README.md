@@ -160,7 +160,10 @@ rna_vm  <- vm(rna)
 colnames(rna_vm) <- colnames(rna)
 # make column name shorter to only have sample name (1,12 letter)
 colnames(rna_vm) <- substr(colnames(rna_vm),1,12)
-# After these steps we expect that data to have a somehow gaussian distribution.
-hist(rna_vm)
 # Since no longer "rna" dataset is needed, we can remove it. 
 rm(rna)
+
+# After these steps we expect that data to have a somehow gaussian distribution.
+hist(rna_vm)
+```
+![alt text](https://github.com/hamid-gen/RNA_seq_survival_analysis_in_R/blob/master/rna_vm.png)
