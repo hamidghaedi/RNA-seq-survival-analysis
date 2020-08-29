@@ -40,6 +40,10 @@ Direct data retrieval, no need to install any packages. I have adapted this appr
 
 To read data in R:
 ```R
+# loading librariies:
+require(TCGABiolink)
+require(limma)
+
 ###reading exptression matrix
 rna <- read.table('BLCA.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes_normalized__data.data.txt', sep = "\t", header = T, row.names = 1)
 # looking at first rows:
@@ -47,7 +51,7 @@ head(rna)
 # as you can see, we have to remove the first row of the datset
 # removing unwanted row:
 rna <- rna[-1, ]
-# row names should be gene name but as you can see, it is a combination of gene symbol and gene Entrez id. for example _"A1BG"_ gene is indicated as _"A1BG|1"_ . 
+# row names should be gene name but as you can see, it is a combination of gene symbol and gene Entrez id. for example "A1BG" gene is indicated as "A1BG|1" . 
 #We should polish row name to only contain gene symbol.
 df <- data.frame(name = row.names(rna)) # keeping rownames as a temporary data frame
 df <- data.frame(do.call('rbind', strsplit(as.character(df$name),'|',fixed=TRUE))) # this do magic like "text to column" in Excel!
@@ -78,7 +82,7 @@ Alternatively, it is possible to download data using third party package like ``
 
 1-	RNA data
 ```R
-library(TCGAbiolink)
+
 query <- GDCquery(project = "TCGA-BLCA",
                            data.category = "Gene expression",
                            data.type = "Gene expression quantification",
@@ -120,5 +124,42 @@ no_exp <- no_exp[no_exp$count > fif, ]$gene
 rna <- rna[- which(row.names(rna) %in% no_exp), ]
 ```
 
+#### RNA-seq data normalization
+In order to normalize RNA-seq data , we use ```voom``` function from ```limma``` package.  As stated in the manual this fuction "transform count data to 
+log2-counts per million (logCPM), estimate the mean-variance relationship and use this to compute appropriate observational-level weights".
+```voom``` needs to be supplied by a count matrix and a "design matrix with rows corresponding to samples and columns to coefficients to be estimated". 
+Before diving into normalization step, we need to get familiarize ourselves with the TCGA barcode structure and meaning. Full description can be found here. 
+A typical barcode is something like “TCGA-CF-A1HS-01A-11R-A13Y-07 “. As detailed by the TCGA working group letter 14 to 15 – here 01 denote sample type: 
+Tumor types range from 01 - 09, normal types from 10 - 19 and control samples from 20 - 29. So the barcode in our example is a tumoral sample barcode. 
+To identify how many tumor and normal samples we have in our data we can do: 
 
+```R
+table(substr(colnames(rna),14,15))
+ #01  11  # so we have 408 tumors and 11 normal samples.
+#408  19 
+```
+Now using the barcode we can make indexes for tumor and normal samples
 
+```R
+normal_index <- which(substr(colnames(rna),14,14) == '1')
+tumor_index <- which(substr(colnames(rna),14,14) == '0')
+
+# apply voom function from limma package to normalize the data
+vm <- function(x){
+  cond <- factor(ifelse(seq(1,dim(x)[2],1) %in% tumor_index, 1,  0))
+  d <- model.matrix(~1+cond)
+  x <- t(apply(x,1,as.numeric))
+  ex <- voom(x,d,plot=F)
+  return(ex$E)
+}
+
+rna_vm  <- vm(rna)
+
+# restoring column names
+colnames(rna_vm) <- colnames(rna)
+# make column name shorter to only have sample name (1,12 letter)
+colnames(rna_vm) <- substr(colnames(rna_vm),1,12)
+# After these steps we expect that data to have a somehow gaussian distribution.
+hist(rna_vm)
+# Since no longer "rna" dataset is needed, we can remove it. 
+rm(rna)
