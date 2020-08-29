@@ -1,5 +1,6 @@
 # RNA seq survival analysis in R
-Survival analysis on gene expression (RNA-seq) in bladder cancer TCGA data
+Originally this was the method I used to do survival analysis on gene expression (RNA-seq) in bladder cancer TCGA data. 
+For publishing here I decided to add more details and steps in a way that helps everybody who need to get to know basics and codes needed for survival.
 
 ## When is this needed?
 
@@ -171,7 +172,7 @@ hist(rna_vm)
 #### RNA-seq data scaling and encoding
 
 To use gene expression matrix in survival analysis usually we encode genes as high or low expressed genes. To do so both fold change and z-score are fine.
-However due to retaining heterogeneity in data the latter is preferred. Using z-score we will have a measure of how many SD away from the mean a gene is. Also we will consider those with |Z| > 1.96 to be differentially expressed: + 1.96 (up-regulated) and -1.96 (dow-nregulated)
+However due to retaining heterogeneity in data the latter is preferred. Using z-score we will have a measure of how many SD away from the mean a gene is. Also we will consider those with |Z| > 1.96 to be differentially expressed: + 1.96 (up-regulated) and -1.96 (down-regulated)
 
 ```R
 scal <- function(x,y){
