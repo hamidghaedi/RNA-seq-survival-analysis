@@ -128,7 +128,8 @@ rna <- rna[- which(row.names(rna) %in% no_exp), ]
 In order to normalize RNA-seq data , we use ```voom``` function from ```limma``` package.  As stated in the manual this fuction "transform count data to 
 log2-counts per million (logCPM), estimate the mean-variance relationship and use this to compute appropriate observational-level weights".
 ```voom``` needs to be supplied by a count matrix and a "design matrix with rows corresponding to samples and columns to coefficients to be estimated". 
-Before diving into normalization step, we need to get familiarize ourselves with the TCGA barcode structure and meaning. Full description can be found here. 
+
+Before diving into normalization step, we need to get familiarize ourselves with the TCGA barcode structure and meaning. Full description can be found [here](https://docs.gdc.cancer.gov/Encyclopedia/pages/TCGA_Barcode/). 
 A typical barcode is something like “TCGA-CF-A1HS-01A-11R-A13Y-07 “. As detailed by the TCGA working group letter 14 to 15 – here 01 denote sample type: 
 Tumor types range from 01 - 09, normal types from 10 - 19 and control samples from 20 - 29. So the barcode in our example is a tumoral sample barcode. 
 To identify how many tumor and normal samples we have in our data we can do: 
