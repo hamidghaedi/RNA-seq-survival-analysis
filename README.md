@@ -174,7 +174,8 @@ hist(rna_vm)
 To use gene expression matrix in survival analysis usually we encode genes as high or low expressed genes. To do so both fold change and z-score are fine.
 However due to retaining heterogeneity in data the latter is preferred. 
 General formoula for calculating z-score is as 
-z = [(gene X expression value in tumor)-(mean gene X expression value in normal)]/(standard deviation gene X expression in normal).
+
+```z = [(gene X expression value in tumor)-(mean gene X expression value in normal)]/(standard deviation gene X expression in normal)```.
 
 Using z-score we will have a measure of how many SD away from the mean a gene is. Also we will consider those genes  with |Z| > 1.96 to be differentially expressed: + 1.96 (up-regulated) and -1.96 (down-regulated)
 
