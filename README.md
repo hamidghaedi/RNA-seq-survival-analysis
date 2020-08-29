@@ -171,7 +171,7 @@ hist(rna_vm)
 #### RNA-seq data scaling and encoding
 
 To use gene expression matrix in survival analysis usually we encode genes as high or low expressed genes. To do so both fold change and z-score are fine.
-However due to retaining heterogeneity in data the latter is preferred. 
+However due to retaining heterogeneity in data the latter is preferred. Using z-score we will have a measure of how many SD away from the mean a gene is. Also we will consider those with |Z| > 1.96 to be differentially expressed: + 1.96 (up-regulated) and -1.96 (dow-nregulated)
 
 ```R
 scal <- function(x,y){
