@@ -42,8 +42,10 @@ Direct data retrieval, no need to install any packages. I have adapted this appr
 To read data in R:
 ```R
 # loading librariies:
-require(TCGABiolink)
+require(TCGABiolinks)
 require(limma)
+require(survival)
+require(survminer)
 
 ###reading exptression matrix
 rna <- read.table('BLCA.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__RSEM_genes_normalized__data.data.txt', sep = "\t", header = T, row.names = 1)
@@ -248,3 +250,12 @@ Final steps before doing servival analysis is to encode RNA-seq data to dysregul
 dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,1,0)))
 ```
 ### Performing survival analysis
+We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in "RB1" gene.
+```R
+ind_gene <- which(rownames(z_rna) == "RB1")
+# check how many altered samples we have
+table(dys_rna[ind_gene,])
+#  0   1 
+#306 101 
+
+
