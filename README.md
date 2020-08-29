@@ -247,4 +247,4 @@ Final steps before doing servival analysis is to encode RNA-seq data to dysregul
 ```R
 dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,1,0)))
 ```
-###Performing survival analysis
+### Performing survival analysis
