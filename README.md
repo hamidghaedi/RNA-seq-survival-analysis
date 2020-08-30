@@ -168,7 +168,7 @@ hist(rna_vm)
 
 #### RNA-seq data scaling and encoding
 
-*Creditis of function codes goes to @Tris Biostar
+*Creditis of function codes in this section goes to @Tris Biostar
 
 To use gene expression matrix in survival analysis usually we encode genes as high or low expressed genes. To do so both fold change and z-score are fine.
 However due to retaining heterogeneity in data the latter is preferred. 
@@ -243,13 +243,13 @@ dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,"dysregulated","in
 
 ```
 ### Performing survival analysis
-We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in "MAX" gene.
+We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in "EMP1" gene. It has been suggested that this gene is 
+a survival gene for [Bladder cancer](https://www.nature.com/articles/s41420-020-00295-x).
 ```R
-fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == "MAX", ])
+fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == "KMT2A", ])
 fin_dat <- merge( fin_dat, new_clin, by = 0)
 #table(fin_dat$gene)
 # fitting model
-
 fit1 <- survfit(Surv(new_death, event) ~ gene, data = fin_dat)
 print(fit1)
 
@@ -271,3 +271,31 @@ ggsurvplot(fit,
           ggtheme = theme_bw(),
           palette = c("#990000", "#000099"))
 ```
+![alt text](https://github.com/hamid-gen/RNA_seq_survival_analysis_in_R/blob/master/surv.PNG)
+
+##### performing survival analysis for all genes
+To this aim we can use a for loop.
+```R
+all_gene <- row.names(dys_rna)
+result = data.frame( gene=character(0), pval=numeric(0), dysregulated=numeric(0), intact=numeric(0))
+
+for (i in all_gene){
+    fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == i, ])
+    fin_dat <- merge( fin_dat, new_clin, by = 0)
+    if (dim(table(fin_dat$gene)) > 1){
+    fit2 <- survdiff(Surv(new_death, event) ~ gene, data = fin_dat)
+    pv <- ifelse ( is.na(fit2),next,(round(1 - pchisq(fit2$chisq, length(fit2$n) - 1),3)))[[1]]
+
+   gene <- i
+   dysregulated <- table(fin_dat$gene)[1]
+   intact <- table(fin_dat$gene)[2]
+   pval = pv
+   result[i, ] = c(gene, pval, dysregulated, intact)
+    }
+}
+# controllling false postive result by adjusting p.value
+result <- cbind(result, data.frame(padjust = p.adjust(result$pval, method = "BH")))
+```
+Inspect the result file carefully, p values should be interpreted in context of having balance sample size in both dysregulated and intact group. 
+When one group - here dysregulated group is more likely has a low sample number, it is more likely to get you a significant p value while this 
+would not be true in most cases. 
