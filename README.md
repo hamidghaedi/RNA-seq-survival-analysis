@@ -24,10 +24,9 @@ In the real-world scenarios in a cohort of patients, it is fairly common to have
 
 
 ## Steps toward performing survival analysis
+There are three general steps toward doing a survival analysis: 1) Downloading data, 2)Data cleaning, recoding and transformation, and 3)Performing survival analysis.
 
-From here on, we will focus on gene expression data. For steps needed for survival analysis using mutation data please refer here. 
-
-### Downloading  data
+### 1-Downloading  data
 We can use two approaches to retrive data
 
 #### Approach A:
@@ -103,7 +102,7 @@ clinical <- data.frame(dat@colData)
 ```
 I'd rather to use Approach B, since it is returning you most updated clinical data. However, both should work fine. 
 
-### Data cleaning, recoding and transformation
+### 2-Data cleaning, recoding and transformation
 However almost all genes included in the ```rna``` matrix, it is quite logical to have genes which show no expression (show 0 expression in all samples) or very low expression or uneven expression pattern ( having 0 value in >= 50% of cases). We need to keep these types of genes out from our analysis.
 
 ```R
@@ -241,7 +240,7 @@ dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,"dysregulated","in
 
 
 ```
-### Performing survival analysis
+### 3-Performing survival analysis
 We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in *EMP1* gene. It has been suggested that this gene is 
 a survival gene for [Bladder cancer](https://www.nature.com/articles/s41420-020-00295-x). Further, in this paper *TPM1*, *NRP2*, *FGFR1*, *CAVIN1*, and *LATS2* were 
 identified as bladder cancer survival-related genes. 
