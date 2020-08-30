@@ -300,7 +300,8 @@ Inspect the result file carefully, p values should be interpreted in context of 
 When one group - here dysregulated group is more likely has a low sample number, it is more likely to get you a significant p value while this 
 would not be true in most cases. 
 
-The following table represent a sub-set from the ```result``` table for six survival related genes (mentioned above). 
+The following table represent a sub-set from the ```result``` table for six survival related genes (mentioned above). As you can see, in our analysis
+some of these genes show significant association and two of them show non-significant p-value.
 
 |gene    | pval    |dysregulated    |intact |
 |------- |:-------:|:--------------:|------:|
