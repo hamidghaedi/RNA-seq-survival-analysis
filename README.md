@@ -302,11 +302,11 @@ would not be true in most cases.
 
 The following table represent a sub-set from the ```result``` table for six survival related genes (mentioned above). 
 
-gene | pval |dysregulated |intact 
----|---|---|  
-EMP1 | 0.005 | 117 |290 
-FGFR1 | 0.051 | 273 |134 
-TPM1 | 0.056 | 54 |353 
-NRP2 | 0.147 | 88 |319 
-LATS2 | 0.186 | 89 |318 
+gene    | pval    |dysregulated    |intact 
+---     |---      |---             |   
+EMP1    | 0.005   | 117            |290 
+FGFR1   | 0.051   | 273            |134 
+TPM1    | 0.056   | 54             |353 
+NRP2    | 0.147   | 88             |319 
+LATS2   | 0.186   | 89             |318 
 
