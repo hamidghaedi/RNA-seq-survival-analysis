@@ -196,7 +196,7 @@ scal <- function(x,y){
   }
   return(res)
 }
-z_rna <- scal(rna_vm[,t_index],rna_vm[,n_index])
+z_rna <- scal(rna_vm[,tumor_index],rna_vm[,normal_index])
 
 rm(rna_vm)
 ```
@@ -232,6 +232,8 @@ clinical[clinical$vital_status == "Not Reported", ]$barcode
 clinical <- clinical[-which(row.names(clinical) == "TCGA-K4-A4AB-01B-12R-A28M-07"), ]
 #recoding vital_status
 clinical$event <- ifelse(clinical$vital_status == "Alive", 0,1)
+# create a subset from original clinical data
+new_clin <- clinical[, c("vital_status", "event")
 
 
 # remove sample with "not reported" vital status from expression matrix
