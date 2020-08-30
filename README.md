@@ -161,11 +161,6 @@ rna_vm  <- vm(rna)
 
 # restoring column names
 colnames(rna_vm) <- colnames(rna)
-# make column name shorter to only have sample name (1,12 letter)
-colnames(rna_vm) <- substr(colnames(rna_vm),1,12)
-# Since no longer "rna" dataset is needed, we can remove it. 
-rm(rna)
-
 # After these steps we expect that data to have a somehow gaussian distribution.
 hist(rna_vm)
 ```
@@ -233,19 +228,11 @@ clinical <- clinical[-which(row.names(clinical) == "TCGA-K4-A4AB-01B-12R-A28M-07
 #recoding vital_status
 clinical$event <- ifelse(clinical$vital_status == "Alive", 0,1)
 # create a subset from original clinical data
-new_clin <- clinical[, c("vital_status", "event")
+new_clin <- clinical[, c("new_death", "event")]
 
 
 # remove sample with "not reported" vital status from expression matrix
-grep("TCGA-K4-A4AB", colnames(z_rna))
-#[1] 308
-z_rna <- z_rna[, -308]
-
-#check to see whether all samples in RNA matrix are present in clinical dataset
-all(substr(rownames(clinical),1,12) %in% colnames(z_rna))
-#[1] TRUE
-all(substr(rownames(clinical),1,12) %in% colnames(z_rna))
-#[1] TRUE
+z_rna <- z_rna[, -"TCGA-K4-A4AB-01B-12R-A28M-07"]
 ```
 Final steps before doing servival analysis is to encode RNA-seq data to dysregulated and intact. by dysregulated we mean genes with |z-score| > 1.96.
 ```R
@@ -254,10 +241,20 @@ dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,1,0)))
 ### Performing survival analysis
 We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in "RB1" gene.
 ```R
-ind_gene <- which(rownames(z_rna) == "RB1")
+index_gene <- which(rownames(z_rna) == "RB1")
 # check how many altered samples we have
 table(dys_rna[ind_gene,])
 #  0   1 
 #306 101 
 
+# since we need the same number of patients in both clinical and RNASeq data take 
+#the indices for the matching samples
+ind_tum <- which(unique(colnames(z_rna)) %in% rownames(clinical))
+ind_clin <- which(rownames(clinical) %in% colnames(z_rna))
+
+s <- survfit(Surv(as.numeric(as.character(new_clin$new_death))[ind_clin],new_clin$event[ind_clin])~dys_rna[ind_gene,ind_tum])
+s1 <- tryCatch(survdiff(Surv(as.numeric(as.character(new_clin$new_death))[ind_clin],new_clin$event[ind_clin])~dys_rna[ind_gene,ind_tum]), error = function(e) return(NA))
+# extraect the p.value
+pv <- ifelse ( is.na(s1),next,(round(1 - pchisq(s1$chisq, length(s1$n) - 1),3)))[[1]]
+print(pv)
 
