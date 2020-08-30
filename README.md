@@ -243,10 +243,10 @@ dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,"dysregulated","in
 
 ```
 ### Performing survival analysis
-We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in "EMP1" gene. It has been suggested that this gene is 
+We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in *EMP1* gene. It has been suggested that this gene is 
 a survival gene for [Bladder cancer](https://www.nature.com/articles/s41420-020-00295-x).
 ```R
-fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == "KMT2A", ])
+fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == "EMP1", ])
 fin_dat <- merge( fin_dat, new_clin, by = 0)
 #table(fin_dat$gene)
 # fitting model
