@@ -168,6 +168,8 @@ hist(rna_vm)
 
 #### RNA-seq data scaling and encoding
 
+*Creditis of function codes goes to @Tris Biostar
+
 To use gene expression matrix in survival analysis usually we encode genes as high or low expressed genes. To do so both fold change and z-score are fine.
 However due to retaining heterogeneity in data the latter is preferred. 
 General formoula for calculating z-score is as 
@@ -236,25 +238,36 @@ z_rna <- z_rna[, -"TCGA-K4-A4AB-01B-12R-A28M-07"]
 ```
 Final steps before doing servival analysis is to encode RNA-seq data to dysregulated and intact. by dysregulated we mean genes with |z-score| > 1.96.
 ```R
-dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,1,0)))
+dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,"dysregulated","intact")))
+
+
 ```
 ### Performing survival analysis
-We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in "RB1" gene.
+We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in "MAX" gene.
 ```R
-index_gene <- which(rownames(z_rna) == "RB1")
-# check how many altered samples we have
-table(dys_rna[ind_gene,])
-#  0   1 
-#306 101 
+fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == "MAX", ])
+fin_dat <- merge( fin_dat, new_clin, by = 0)
+#table(fin_dat$gene)
+# fitting model
 
-# since we need the same number of patients in both clinical and RNASeq data take 
-#the indices for the matching samples
-ind_tum <- which(unique(colnames(z_rna)) %in% rownames(clinical))
-ind_clin <- which(rownames(clinical) %in% colnames(z_rna))
+fit1 <- survfit(Surv(new_death, event) ~ gene, data = fin_dat)
+print(fit1)
 
-s <- survfit(Surv(as.numeric(as.character(new_clin$new_death))[ind_clin],new_clin$event[ind_clin])~dys_rna[ind_gene,ind_tum])
-s1 <- tryCatch(survdiff(Surv(as.numeric(as.character(new_clin$new_death))[ind_clin],new_clin$event[ind_clin])~dys_rna[ind_gene,ind_tum]), error = function(e) return(NA))
-# extraect the p.value
-pv <- ifelse ( is.na(s1),next,(round(1 - pchisq(s1$chisq, length(s1$n) - 1),3)))[[1]]
+# calcilating pvalue
+fit2 <- survdiff(Surv(new_death, event) ~ gene, data = fin_dat)
+pv <- ifelse ( is.na(fit2),next,(round(1 - pchisq(fit2$chisq, length(s1$n) - 1),3)))[[1]]
 print(pv)
-
+```
+One of the most intresting aspect of survival analysis is to have survival probability in a graph (Kaplan–Meier curve). 
+To draw KM curve:
+```R
+# Change color, linetype by strata, risk.table color by strata
+ggsurvplot(fit,
+          pval = TRUE, conf.int = TRUE,
+          risk.table = TRUE, # Add risk table
+          risk.table.col = "strata", # Change risk table color by groups
+          linetype = "strata", # Change line type by groups
+          surv.median.line = "hv", # Specify median survival
+          ggtheme = theme_bw(),
+          palette = c("#990000", "#000099"))
+```
