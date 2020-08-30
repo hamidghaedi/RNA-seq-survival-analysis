@@ -244,7 +244,8 @@ dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,"dysregulated","in
 ```
 ### Performing survival analysis
 We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in *EMP1* gene. It has been suggested that this gene is 
-a survival gene for [Bladder cancer](https://www.nature.com/articles/s41420-020-00295-x).
+a survival gene for [Bladder cancer](https://www.nature.com/articles/s41420-020-00295-x). Further, in this paper *TPM1*, *NRP2*, *FGFR1*, *CAVIN1*, and *LATS2* were 
+identified as bladder cancer survival-related genes. 
 ```R
 fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == "EMP1", ])
 fin_dat <- merge( fin_dat, new_clin, by = 0)
@@ -293,9 +294,19 @@ for (i in all_gene){
    result[i, ] = c(gene, pval, dysregulated, intact)
     }
 }
-# controllling false postive result by adjusting p.value
-result <- cbind(result, data.frame(padjust = p.adjust(result$pval, method = "BH")))
+
 ```
 Inspect the result file carefully, p values should be interpreted in context of having balance sample size in both dysregulated and intact group. 
 When one group - here dysregulated group is more likely has a low sample number, it is more likely to get you a significant p value while this 
 would not be true in most cases. 
+
+The following table represent a sub-set from the ```result``` table for six survival related genes (mentioned above). 
+
+gene | pval |dysregulated |intact 
+---|---|---|  
+EMP1 | 0.005 | 117 |290 
+FGFR1 | 0.051 | 273 |134 
+TPM1 | 0.056 | 54 |353 
+NRP2 | 0.147 | 88 |319 
+LATS2 | 0.186 | 89 |318 
+
