@@ -306,3 +306,25 @@ The following table represents a sub-set from the ```result``` table for six sur
 |NRP2    | 0.147   | 88             |319    |
 |LATS2   | 0.186   | 89             |318    |
 
+In some cases for example for ARID1A gene, we can see three distinct class of expression: low (z-score <= -1.96), normal (-1.96 < z-score > 1.96), and high (z-score >= 1.96) In contrast to simply have dysregulated and intact expression, it is possible to have genes with a high, normal and low expression for survival analysis. To do so please consider these codes:
+```R
+dys_rna <- t(apply(z_rna, 1, function(x) ifelse(x >= 1.96,"High",ifelse(x <= -1.96, "Low", "Norm"))))
+
+all_gene <- row.names(dys_rna)
+result = data.frame( gene=character(0), pval=numeric(0), dysregulated=numeric(0), intact=numeric(0))
+
+for (i in all_gene){
+     fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == i, ])
+     fin_dat <- merge( fin_dat, new_clin, by = 0)
+     if (dim(table(fin_dat$gene)) > 1){
+         fit2 <- survdiff(Surv(new_death, event) ~ gene, data = fin_dat)
+         pv <- ifelse ( is.na(fit2),next,(round(1 - pchisq(fit2$chisq, length(fit2$n) - 1),3)))[[1]]
+         
+         gene <- i
+         High <- table(fin_dat$gene)[1]
+         Norm <- table(fin_dat$gene)[2]
+         Low <- table(fin_dat$gene)[3]
+         pval = pv
+         result[i, ] = c(gene, pval, High,Norm, Low)
+     }
+ }
