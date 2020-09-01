@@ -311,7 +311,7 @@ In some cases for example for ARID1A gene, we can see three distinct class of ex
 dys_rna <- t(apply(z_rna, 1, function(x) ifelse(x >= 1.96,"High",ifelse(x <= -1.96, "Low", "Norm"))))
 
 all_gene <- row.names(dys_rna)
-result = data.frame( gene=character(0), pval=numeric(0), dysregulated=numeric(0), intact=numeric(0))
+result = data.frame( gene=character(0), pval=numeric(0), High=numeric(0), Norm=numeric(0), Low=numeric(0))
 
 for (i in all_gene){
      fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == i, ])
