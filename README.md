@@ -41,6 +41,7 @@ To read data in R:
 ```R
 # loading librariies:
 require(TCGABiolinks)
+require(SummarizedExperiment)
 require(limma)
 require(survival)
 require(survminer)
