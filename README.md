@@ -40,7 +40,7 @@ Direct data retrieval, no need to install any packages. I have adapted this appr
 To read data in R:
 ```R
 # loading librariies:
-require(TCGABiolinks)
+require(TCGAbiolinks)
 require(SummarizedExperiment)
 require(limma)
 require(survival)
@@ -233,7 +233,7 @@ new_clin <- clinical[, c("new_death", "event")]
 
 
 # remove sample with "not reported" vital status from expression matrix
-z_rna <- z_rna[, -"TCGA-K4-A4AB-01B-12R-A28M-07"]
+z_rna <- z_rna[, - grep("TCGA-K4-A4AB-01B", colnames(z_rna))]
 ```
 Final steps before doing servival analysis is to encode RNA-seq data to dysregulated and intact. by dysregulated we mean genes with |z-score| > 1.96.
 ```R
