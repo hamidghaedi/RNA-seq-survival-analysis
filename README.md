@@ -262,7 +262,7 @@ One of the most intresting aspect of survival analysis is to have survival proba
 To draw KM curve:
 ```R
 # Change color, linetype by strata, risk.table color by strata
-ggsurvplot(fit,
+ggsurvplot(fit1,
           pval = TRUE, conf.int = TRUE,
           risk.table = TRUE, # Add risk table
           risk.table.col = "strata", # Change risk table color by groups
@@ -273,7 +273,7 @@ ggsurvplot(fit,
 ```
 ![alt text](https://github.com/hamid-gen/RNA_seq_survival_analysis_in_R/blob/master/surv.PNG)
 
-##### performing survival analysis for all genes
+### Performing survival analysis for all genes
 To this aim we can use a for loop.
 ```R
 all_gene <- row.names(dys_rna)
@@ -323,9 +323,13 @@ for (i in all_gene){
          
          gene <- i
          High <- table(fin_dat$gene)[1]
-         Norm <- table(fin_dat$gene)[2]
-         Low <- table(fin_dat$gene)[3]
+         Norm <- table(fin_dat$gene)[3]
+         Low <- table(fin_dat$gene)[2]
          pval = pv
          result[i, ] = c(gene, pval, High,Norm, Low)
      }
  }
+```
+In order to perform more accurate analysis you should care about those genes where significant imbalance is evident in the count table (i.e. sample number in one or two categories is very low). In these case the obtained p value would be affected. Follow next section to see correction for this kind of bias in the analysis. 
+
+
