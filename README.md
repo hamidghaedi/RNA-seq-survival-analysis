@@ -307,29 +307,156 @@ The following table represents a sub-set from the ```result``` table for six sur
 |NRP2    | 0.147   | 88             |319    |
 |LATS2   | 0.186   | 89             |318    |
 
-In some cases for example for ARID1A gene, we can see three distinct class of expression: low (z-score <= -1.96), normal (-1.96 < z-score > 1.96), and high (z-score >= 1.96) In contrast to simply have dysregulated and intact expression, it is possible to have genes with a high, normal and low expression for survival analysis. To do so please consider these codes:
-```R
-dys_rna <- t(apply(z_rna, 1, function(x) ifelse(x >= 1.96,"High",ifelse(x <= -1.96, "Low", "Norm"))))
+### Finding all survival related gene 
 
-all_gene <- row.names(dys_rna)
-result = data.frame( gene=character(0), pval=numeric(0), High=numeric(0), Norm=numeric(0), Low=numeric(0))
+In some cases for example for ARID1A gene, we can see three distinct class of expression: low (z-score <= -1.96), normal (-1.96 < z-score > 1.96), and high (z-score >= 1.96) In contrast to simply have dysregulated and intact expression, it is possible to have genes with a high, normal and low expression for survival analysis. To do so please consider these codes:
+
+
+```R
+################ Finding genes which has values under the three categories High, Norm, Low
+gene_table <- data.frame( gene=character(0), High=numeric(0), Norm = numeric(0), Low=numeric(0), lab = character(0))
+gene <- row.names(dys_rna)
+for (i in gene) {
+  df <- data.frame(gene = dys_rna[row.names(dys_rna) == i, ])
+  tb <- table(df)
+  if (dim(tb) == 3){
+    gene <- i
+    High <- tb[1]
+    Low <- tb[2]
+    Norm <- tb[3]
+    lab <- paste(names(tb)[1],names(tb)[2],names(tb)[3], sep = "_" )
+    gene_table[i, ] = c(gene, High, Norm, Low, lab)
+  }
+  
+}
+
+############## finding genes which has data only in two of the three states (High,Norm,Low)
+gene_table_2x2 <- data.frame( gene=character(0), state1=numeric(0), state2= numeric(0), lab1 = character(0), lab2 = character(0))
+
+gene <- row.names(dys_rna)
+for (i in gene) {
+  df <- data.frame(gene = dys_rna[row.names(dys_rna) == i, ])
+  tb <- table(df)
+  if (dim(tb) == 2){
+    gene <- i
+    state1 <- tb[1]
+    state2 <- tb[2]
+    lab1 <- paste(names(tb)[1])
+    lab2 <- paste(names(tb)[2])
+    gene_table_2x2[i, ] = c(gene, state1, state2, lab1, lab2)
+  }
+  
+}
+
+#h.table
+h.tab <- gene_table_2x2[gene_table_2x2$lab1 == "High", ]
+names(h.tab)[2] <- names(table(h.tab$lab1))[1]
+names(h.tab)[3] <- names(table(h.tab$lab2))[1]
+h.tab$Low <- NA
+h.tab <- h.tab[, colnames(gene_table)[1:4]]
+
+#l.table
+l.tab <- gene_table_2x2[gene_table_2x2$lab1 == "Low", ]
+names(l.tab)[2] <- names(table(l.tab$lab1))[1]
+names(l.tab)[3] <- names(table(l.tab$lab2))[1]
+l.tab$High <- NA
+l.tab <- l.tab[, colnames(gene_table)[1:4]]
+#
+gene_table_2x2 <- rbind(h.tab, l.tab)
+gene_table_2x2$lab <- NA
+#
+gene_table <- rbind(gene_table, gene_table_2x2)
+gene_table <- gene_table[,-5]
+
+# geting the result table from the previous analysis:
+gene_table[,2:4] <- sapply(gene_table[, 2:4], as.numeric) # setting type of columns for numbers as numeric
+gene_table[is.na(gene_table)] <- 0
+
+# defining classes for each gene
+gene_table$state <- ifelse(gene_table$Norm < 15 & gene_table$High >= 15 & gene_table$Low >= 15, "HL", 
+                        ifelse(gene_table$Low < 15 & gene_table$High >= 15 & gene_table$Norm >= 15, "HN", 
+                               ifelse(gene_table$High < 15 & gene_table$Low >= 15 & gene_table$Norm >= 15, "LN",
+                                      ifelse(gene_table$High >= 15 & gene_table$Low >= 15 & gene_table$Norm >= 15, "HNL", "flag"))))
+# see what we get
+table(gene_table$state)
+
+#hnl
+hnl.dys_rna <- t(apply(z_rna[row.names(z_rna) %in% gene_table[gene_table$state == "HNL", ]$gene, ], 1, function(x) ifelse(x >= 1.96,"High",ifelse(x <= -1.96, "Low", "Norm"))))
+
+gene <- row.names(hnl.dys_rna)
+hnl.result = data.frame( gene=character(0), pval=numeric(0), High=numeric(0), Norm=numeric(0), Low=numeric(0))
+
+for (i in gene){
+  fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == i, ])
+  fin_dat <- merge( fin_dat, new_clin, by = 0)
+  if (dim(table(fin_dat$gene)) > 1){
+    fit2 <- survdiff(Surv(new_death, event) ~ gene, data = fin_dat)
+    pv <- ifelse ( is.na(fit2),next,(round(1 - pchisq(fit2$chisq, length(fit2$n) - 1),3)))[[1]]
+    
+    gene <- i
+    High <- table(fin_dat$gene)[1]
+    Norm <- table(fin_dat$gene)[3]
+    Low <- table(fin_dat$gene)[2]
+    pval = pv
+    hnl.result[i, ] = c(gene, pval, High,Norm, Low)
+  }
+}
+
+#hn
+hn.dys_rna <- t(apply(z_rna[row.names(z_rna) %in% gene_table[gene_table$state == "HN", ]$gene, ], 1, function(x) ifelse(x >= 1.96,"High",ifelse(x <= -1.96, "Low", "Norm"))))
+gene <- gene_table[gene_table$newcol == "HN", ]$gene
+hn.result = data.frame( gene=character(0), pval=numeric(0), High=numeric(0), Norm=numeric(0))
 
 for (i in all_gene){
-     fin_dat <- data.frame(gene = dys_rna[row.names(dys_rna) == i, ])
-     fin_dat <- merge( fin_dat, new_clin, by = 0)
-     if (dim(table(fin_dat$gene)) > 1){
-         fit2 <- survdiff(Surv(new_death, event) ~ gene, data = fin_dat)
-         pv <- ifelse ( is.na(fit2),next,(round(1 - pchisq(fit2$chisq, length(fit2$n) - 1),3)))[[1]]
-         
-         gene <- i
-         High <- table(fin_dat$gene)[1]
-         Norm <- table(fin_dat$gene)[3]
-         Low <- table(fin_dat$gene)[2]
-         pval = pv
-         result[i, ] = c(gene, pval, High,Norm, Low)
-     }
- }
+  fin_dat <- data.frame(gene = hn.dys_rna[row.names(hn.dys_rna) == i, ])
+  fin_dat <- merge( fin_dat, new_clin, by = 0)
+  fin_dat <- fin_dat[-which(fin_dat$gene == "Low"), ]
+  if (dim(table(fin_dat$gene)) > 1){
+  fit2 <- survdiff(Surv(new_death, event) ~ gene, data = fin_dat)
+  pv <- ifelse ( is.na(fit2),next,(round(1 - pchisq(fit2$chisq, length(fit2$n) - 1),3)))[[1]]
+  #
+  gene <- i
+  High <- table(fin_dat$gene)[1]
+  Norm <- table(fin_dat$gene)[2]
+  pval = pv
+  hn.result[i, ] = c(gene, pval, High, Norm)
+  }
+}
+
+#ln
+ln.dys_rna <- t(apply(z_rna[row.names(z_rna) %in% gene_table[gene_table$state == "LN", ]$gene, ], 1, function(x) ifelse(x >= 1.96,"High",ifelse(x <= -1.96, "Low", "Norm"))))
+
+gene <- gene_table[gene_table$newcol == "LN", ]$gene
+ln.result = data.frame( gene=character(0), pval=numeric(0), Low=numeric(0), Norm=numeric(0))
+
+for (i in all_gene){
+  fin_dat <- data.frame(gene = ln.dys_rna[row.names(ln.dys_rna) == i, ])
+  fin_dat <- merge( fin_dat, new_clin, by = 0)
+  fin_dat <- fin_dat[-which(fin_dat$gene == "High"), ]
+  if (dim(table(fin_dat$gene)) > 1){
+  fit2 <- survdiff(Surv(new_death, event) ~ gene, data = fin_dat)
+  pv <- ifelse ( is.na(fit2),next,(round(1 - pchisq(fit2$chisq, length(fit2$n) - 1),3)))[[1]]
+  #
+  gene <- i
+  Low <- table(fin_dat$gene)[1]
+  Norm <- table(fin_dat$gene)[2]
+  pval = pv
+  ln.result[i, ] = c(gene, pval, High, Norm)
+  }
+}
+
+# combining results into one dataset
+hn.result$Low <- NA
+ln.result$High <- NA
+hn.result <- hn.result[, colnames(hnl.result)]
+ln.result <- ln.result[, colnames(hnl.result)]
+#
+result <- rbind(hnl.result, hn.result, ln.result)
+# selecting significantly associated genes
+result$pval <- as.numeric(result$pval)
+sig.result <- result[result$pval <= 0.05 ,]
+
+write.table(sig.result, file = "sig.surv.associated.gene.csv", row.names = T, quote = F)
 ```
-In order to perform more accurate analysis you should care about those genes where significant imbalance is evident in the count table (i.e. sample number in one or two categories is very low). In these case the obtained p value would be affected. Follow next section to see correction for this kind of bias in the analysis. 
 
 
