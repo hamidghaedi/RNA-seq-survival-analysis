@@ -168,7 +168,7 @@ hist(rna_vm)
 
 #### RNA-seq data scaling and encoding
 
-*Credits of function codes in this section goes to @Tris Biostar
+*Credits of function codein this section goes to @Tris Biostar
 
 To use gene expression matrix in survival analysis usually we encode genes as high or low expressed genes. To do so both fold change and z-score are fine.
 However, due to retaining heterogeneity in data, the latter is preferred.
