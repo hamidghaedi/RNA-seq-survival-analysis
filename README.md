@@ -22,7 +22,6 @@ Two basic concepts in doing survival analysis are survival time and the event in
 
 In the real-world scenarios in a cohort of patients, it is fairly common to have patients who we fail to follow them up, withdraw from the study, or may show no event in the defined time of the study. These situations result in observation which we called them censored observation. We will include censored observations in our analysis for the sake of having more and more data points, however, this needs to treat such data points as censored. For example, if a subject has no death data but has a date to last follow up, we can use this data until a certain time point (last follow update). In survival plot (Kaplan Meier plot) these data point is indicated with a + sign on survival line. To describe survival data, we will use survival probability which corresponds to the probability that a patient survives from the beginning of the time (for example diagnosis of cancer) to a particular future time (end of the study).
 
-## *UPCOMING UPDATES: survival analysis based on maxstat(maximally selected rank statistics) 
 
 ## Steps toward performing survival analysis
 There are three general steps toward doing a survival analysis: 1) Downloading data, 2)Data cleaning, recoding and transformation, and 3)Performing survival analysis.
