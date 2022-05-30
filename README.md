@@ -309,7 +309,7 @@ The following table represents a sub-set from the ```result``` table for six sur
 
 ### Finding all survival related gene 
 
-In some cases for example for ARID1A gene, we can see three distinct class of expression: low (z-score <= -1.96), normal (-1.96 < z-score > 1.96), and high (z-score >= 1.96) In contrast to simply have dysregulated and intact expression, it is possible to have genes with a high, normal and low expression for survival analysis. To do so please consider these codes:
+In some cases for example for ARID1A gene, we can see three distinct class of expression: low (z-score <= -1.96), normal (-1.96 < z-score > 1.96), and high (z-score >= 1.96) In contrast to simply have dysregulated and intact expression, it is possible to have genes with a high, normal and low expression for survival analysis. To do so please consider this code:
 
 
 ```R
