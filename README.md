@@ -3,7 +3,7 @@ Originally this was the method I used to do survival analysis on gene expression
 
 ## When is this needed?
 
-In some cases when you have a list of differentially expressed genes/genes belongs to a specific GO term/somatically mutated genes it would be very powerful to find a correlation between the status of dysregulation in these genes and survival time of patients.
+In some cases when you have a list of differential expressed genes/genes belongs to a specific GO term/somatically mutated genes it would be very powerful to find a correlation between the status of dysregulation in these genes and survival time of patients.
 
 In this project, I performed  survival analysis on bladder cancer data (RNA-seq and DNA-seq) from TCGA. We were interested in finding whether: 
 
@@ -235,14 +235,20 @@ new_clin <- clinical[, c("new_death", "event")]
 # remove sample with "not reported" vital status from expression matrix
 z_rna <- z_rna[, - grep("TCGA-K4-A4AB-01B", colnames(z_rna))]
 ```
-Final steps before doing servival analysis is to encode RNA-seq data to dysregulated and intact. by dysregulated we mean genes with |z-score| > 1.96.
+Final steps before doing survival analysis is to encode RNA-seq data to dysregulated and intact. by dysregulated we mean genes with |z-score| > 1.96.
 ```R
 dys_rna <- t(apply(z_rna, 1, function(x) ifelse(abs(x) > 1.96,"dysregulated","intact")))
 
-
 ```
+#### Data encoding by maximally selected rank statistics
+
+As an alternative, we can use maximally selected rank statistics to identify samples with high (low) expression values for a given gene of interest. In fact, maximally selected rank statistics looks for the optimal cutpoint that maximizes the separation between samples based on their expression levels of the gene. By ranking the samples and testing different cutpoints, this statistical method helps determine the most significant division of samples into groups with distinct expression patterns. This approach allows researchers to identify samples with high (low) expression values, enabling further investigation into the biological implications of these expression levels and their association with specific conditions or phenotypes.
+
+There is an R package which allows for using maximally selected rank statistics implementation, `maxtstat`, see [here](https://cran.r-project.org/web/packages/maxstat/vignettes/maxstat.pdf) for more information and also there is a function `surv_cutpoint` from `survminer` package, ([link]((https://www.rdocumentation.org/packages/survminer/versions/0.4.9/topics/surv_cutpoint))) which uses this method to cut samples into low and high expression group while considering the survival data. 
+
+
 ### 3-Performing survival analysis
-We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are intrested in *EMP1* gene. It has been suggested that this gene is 
+We will use packages ```survival``` and ```survminer``` to do analysis. Suppose we are interested in *EMP1* gene. It has been suggested that this gene is 
 a survival gene for [Bladder cancer](https://www.nature.com/articles/s41420-020-00295-x). Further, in this paper *TPM1*, *NRP2*, *FGFR1*, *CAVIN1*, and *LATS2* were 
 identified as bladder cancer survival-related genes. 
 ```R
@@ -253,7 +259,7 @@ fin_dat <- merge( fin_dat, new_clin, by = 0)
 fit1 <- survfit(Surv(new_death, event) ~ gene, data = fin_dat)
 print(fit1)
 
-# calcilating pvalue
+# calculating pvalue
 fit2 <- survdiff(Surv(new_death, event) ~ gene, data = fin_dat)
 pv <- ifelse ( is.na(fit2),next,(round(1 - pchisq(fit2$chisq, length(fit2$n) - 1),3)))[[1]]
 print(pv)
@@ -272,6 +278,41 @@ ggsurvplot(fit1,
           palette = c("#990000", "#000099"))
 ```
 ![alt text](https://github.com/hamid-gen/RNA_seq_survival_analysis_in_R/blob/master/surv.PNG)
+
+#### using maxstat for survival analysis:
+Below is the code that can be used to perform survival analysis using the `maxstat` method. 
+**Note** I did not run the code , so the following should be considered as an guide rather a working code chunk and it's adapted from [this post](http://www.sthda.com/english/wiki/survminer-0-2-4):
+
+```r
+# 1. Determine the optimal cutpoint of EMP1
+res.cut <- surv_cutpoint(myeloma, time = "time", event = "event",
+   variables = c("DEPDC1", "WHSC1", "CRIM1"))
+summary(res.cut)
+##        cutpoint statistic
+## DEPDC1    279.8  4.275452
+## WHSC1    3205.6  3.361330
+## CRIM1      82.3  1.968317
+# 2. Plot cutpoint for DEPDC1
+# palette = "npg" (nature publishing group), see ?ggpubr::ggpar
+plot(res.cut, "DEPDC1", palette = "npg")
+## $DEPDC1
+survminer
+# 3. Categorize variables
+res.cat <- surv_categorize(res.cut)
+head(res.cat)
+##           time event DEPDC1 WHSC1 CRIM1
+## GSM50986 69.24     0   high   low  high
+## GSM50988 66.43     0    low   low   low
+## GSM50989 66.50     0    low  high  high
+## GSM50990 42.67     1    low  high   low
+## GSM50991 65.00     0    low   low   low
+## GSM50992 65.20     0   high   low   low
+# 4. Fit survival curves and visualize
+fit <- survfit(Surv(time, event) ~DEPDC1, data = res.cat)
+ggsurvplot(fit, risk.table = TRUE, conf.int = TRUE)
+```
+
+
 
 ### Performing survival analysis for all genes
 To this aim we can use a for loop.
