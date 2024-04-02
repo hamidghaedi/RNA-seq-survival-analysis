@@ -1,18 +1,6 @@
 # RNA seq survival analysis in R
 Originally this was the method I used to do survival analysis on gene expression (RNA-seq) in bladder cancer TCGA data. For publishing here I decided to add more details and steps in a way that helps everybody who needs to get to know the basics and codes needed for cancer survival analysis on RNA-seq data.
 
-## When is this needed?
-
-In some cases when you have a list of differentially expressed genes/genes belonging to a specific GO term/somatically mutated genes it would be very powerful to find a correlation between the status of dysregulation in these genes and the survival time of patients.
-
-In this project, I performed  survival analysis on bladder cancer data (RNA-seq and DNA-seq) from TCGA. We were interested in finding out whether: 
-
-a) Do dysregulation of epigenetic-related genes is associated with bladder cancer patient survival? 
-
-b) Do mutations in the epigenetic-related genes is associated with bladder cancer patient survival?  
-
-Here we will focus only RNA-seq data. Before diving into the analysis, I am going to share some basics needed to know to better understand the analysis steps.
-
 ## Survival Analysis intro
 In fact, survival analysis corresponds to a number of statistical methods employed to find the time it takes for an event of interest to occur in a group of patients. To be more specific in cancer research survival we may use survival analysis to answer questions about “time” from operation(surgery) to patient death, “time” from starting a treatment regime to cancer progression, and “time” from response to a drug to disease recurrence. These are somehow classic uses of survival analysis. However, here we will use “gene expression” and “mutation data” to assess their impact on patient survival. Indeed, we want to know the correlation (if any) of specific gene dysregulation on bladder cancer patient survival “time”.
 
